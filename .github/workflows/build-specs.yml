@@ -1,19 +1,19 @@
-name: Check Set-Up & Build
+name: Build Chain Specs
 
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ main ]
+    branches: [ gssmr-test ]
   pull_request:
-    branches: [ main ]
+    branches: [ gssmr-test ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  check:
+  build-specs:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
 
@@ -34,11 +34,23 @@ jobs:
           rustup update stable
           rustup target add wasm32-unknown-unknown --toolchain nightly
 
-      - name: Check Build
+      - name: Build
         run: |
-          SKIP_WASM_BUILD=1 cargo check --release
+          cargo build
 
-      - name: Check Build for Benchmarking
-        run: >
-          pushd node &&
-          cargo check --features=runtime-benchmarks --release
+      - name: Build Specs
+        run: |
+          ./target/debug/gssmr-test-node build-spec --dev --disable-default-bootnode > dev-spec.json &&
+          ./target/debug/gssmr-test-node build-spec --dev --disable-default-bootnode --raw > dev-spec-raw.json &&
+          ./target/debug/gssmr-test-node build-spec --disable-default-bootnode > spec.json &&
+          ./target/debug/gssmr-test-node build-spec --disable-default-bootnode --raw > spec-raw.json
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: |
+            dev-spec.json
+            dev-spec-raw.json
+            spec.json
+            spec-raw.json
