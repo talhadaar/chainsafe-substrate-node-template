@@ -5,14 +5,15 @@
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
-
+use pallet_evm::{EnsureAddressTruncated, HashedAddressMapping};
+use pallet_evm::SubstrateBlockHashMapping;
 use frame_system::EnsureRoot;
 use frame_election_provider_support::{onchain, SequentialPhragmen};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, U256};
 use sp_runtime::{
 	create_runtime_str, curve::PiecewiseLinear, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys, Verify},
@@ -245,8 +246,8 @@ parameter_types! {
 impl pallet_babe::Config for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
-	type EpochChangeTrigger = pallet_babe::SameAuthoritiesForever;
-	type DisabledValidators = ();
+	type EpochChangeTrigger = pallet_babe::ExternalTrigger;
+	type DisabledValidators = Session;
 
 	type KeyOwnerProofSystem = ();
 
@@ -563,6 +564,36 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	pub const ChainId: u64 = 421;
+	pub BlockGasLimit: U256 = U256::from(u32::MAX);
+	// pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+}
+
+impl pallet_evm::Config for Runtime {
+	// type FeeCalculator = BaseFee;
+	// type GasWeightMapping = FixedGasWeightMapping;
+	// type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type FeeCalculator = ();
+	type GasWeightMapping = ();
+	type BlockHashMapping = SubstrateBlockHashMapping<Self>;
+	type CallOrigin = EnsureAddressTruncated;
+	type WithdrawOrigin = EnsureAddressTruncated;
+	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+	type Currency = Balances;
+	type Event = Event;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	// type PrecompilesType = FrontierPrecompiles<Self>;
+	// type PrecompilesValue = PrecompilesValue;
+	type PrecompilesType = ();
+	type PrecompilesValue = ();
+	type ChainId = ChainId;
+	type BlockGasLimit = BlockGasLimit;
+	type OnChargeTransaction = ();
+	// type FindAuthor = FindAuthorTruncated<Babe>;
+	type FindAuthor = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -583,6 +614,7 @@ construct_runtime!(
 		BagsList: pallet_bags_list,
 		Staking: pallet_staking,
 		Sudo: pallet_sudo,
+		EVM: pallet_evm,
 	}
 );
 

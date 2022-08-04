@@ -45,7 +45,8 @@ frame-election-provider-support = { default-features = false, git = "https://git
 pallet-bags-list = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.25" }
 pallet-election-provider-multi-phase = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.25" }
 pallet-staking-reward-curve = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.25" }
-
+ serde = { version = "1.0.139", features = ["derive"], optional = true }
+ pallet-evm = { default-features = false, git = "https://github.com/paritytech/frontier.git", branch = "polkadot-v0.9.25" }
 
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.25" }
@@ -94,6 +95,8 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	"pallet-evm/std",
+	"serde",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
