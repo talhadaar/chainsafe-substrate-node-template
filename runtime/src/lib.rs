@@ -129,8 +129,8 @@ pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 
 // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
 //       Attempting to do so will brick block production.
-pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 3 * MINUTES;
-pub const EPOCH_DURATION_IN_SLOTS: BlockNumber = 3 * MINUTES;
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = MINUTES;
+pub const EPOCH_DURATION_IN_SLOTS: BlockNumber = MINUTES;
 
 /// The BABE epoch configuration at genesis.
 pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
